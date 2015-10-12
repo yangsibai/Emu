@@ -48,6 +48,7 @@ $(document).ready ->
                 rules = CSSUtilities.getCSSRules @currentEl, "*", "selector,css"
                 @printRules rules
                 console.log Date.now() - start + "ms"
+                e.preventDefault()
 
             printRules: (rules)->
                 ruleDict = {}
