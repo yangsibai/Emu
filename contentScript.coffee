@@ -2,7 +2,7 @@ $(document).ready ->
     class Emu
         constructor: ->
             @cutting = false
-            @$currentEl = null
+            @currentEl = null
             @defaultStyle =
                 width: 1
                 height: 1
@@ -10,9 +10,9 @@ $(document).ready ->
                 top: 0
                 background: '#f00'
                 position: 'absolute'
-                opacity: 0.3
+                opacity: 0.1
                 'z-index': 999999
-                transform: ''
+                'pointer-events': 'none'
             mask = $ '<div/>'
             mask.css @defaultStyle
 
@@ -20,28 +20,32 @@ $(document).ready ->
             $(document.body).append(@mask)
 
         restoreCurrent: ->
+            @currentEl = null
             @mask.css @defaultStyle
 
         chooseCurrent: (el)->
-            $currentEl = $(el)
-            offset = $currentEl.offset()
-            width = $currentEl.width()
-            height = $currentEl.height()
+            @currentEl = el
+            $el = $(el)
+            offset = $el.offset()
+            width = $el.width()
+            height = $el.height()
             @mask.css
-                transform: "translateX(#{offset.top}px) translateY(#{offset.left}px) scaleX(#{width}) scaleY(#{height})"
-            @$currentEl = $currentEl
+                top: offset.top
+                left: offset.left
+                width: width
+                height: height
 
         listener: (e)->
-            if @$currentEl isnt e.target
+            if @currentEl isnt e.target
                 @restoreCurrent()
                 @chooseCurrent(e.target)
 
         startCut: ->
-            $(window).on 'mousemove', @listener.bind(this)
+            $(window).on 'mousemove.emu', @listener.bind(this)
 
         stopCut: ->
             @restoreCurrent()
-            $(window).off 'mousemove', @listener.bind(this)
+            $(window).off 'mousemove.emu'
 
         toggle: ->
             @cutting = not @cutting
