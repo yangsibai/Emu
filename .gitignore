@@ -2,3 +2,4 @@
 *.js
 *.css
 *.map
+.DS_Store
