@@ -45,15 +45,25 @@ $(document).ready ->
 
             handleClick: (e)->
                 start = Date.now()
-                rules = CSSUtilities.getCSSRules @currentEl, "*", "selector,css"
-                @printRules rules
-                console.log Date.now() - start + "ms"
+#                rules = CSSUtilities.getCSSRules @currentEl, "*", "selector,css"
+                @rules = []
+                @getRules(@currentEl)
+                @printRules @rules
+                console.log "total:", Date.now() - start + 'ms'
                 e.preventDefault()
+
+            getRules: (el)->
+                rules = CSSUtilities.getCSSRules el, '*', 'selector,css'
+                @rules = @rules.concat(rules)
+                for child in el.children
+                    @getRules(child)
 
             printRules: (rules)->
                 ruleDict = {}
                 for rule in rules
                     unless rule.css.trim()
+                        continue
+                    unless rule.selector.trim()
                         continue
                     unless ruleDict[rule.selector]
                         ruleDict[rule.selector] = {}
