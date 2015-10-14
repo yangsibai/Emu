@@ -47,9 +47,13 @@ $(document).ready ->
                 start = Date.now()
 #                rules = CSSUtilities.getCSSRules @currentEl, "*", "selector,css"
                 @rules = []
-                @getRules(@currentEl)
+                @getRules @currentEl
                 @printRules @rules
                 console.log "total:", Date.now() - start + 'ms'
+
+                @parents = []
+                @getParent @currentEl
+                console.log @parents
                 e.preventDefault()
 
             getRules: (el)->
@@ -83,6 +87,14 @@ $(document).ready ->
                     str += "\n}\n"
                     result.push str
                 console.log result.join '\n'
+
+            getParent: (el)->
+                parentNode = el.parentNode
+                if parentNode and parentNode.nodeName isnt 'BODY'
+                    @parents.push
+                        nodeName: parentNode.nodeName
+                        className: parentNode.className
+                    @getParent parentNode
 
             startCut: ->
                 $(window).on 'mousemove.emu', @listener.bind(this)
