@@ -7,6 +7,7 @@ $(document).ready ->
                 @cutting = false
                 @currentEl = null
                 @currentOutline = ''
+                @currentZIndex = 'auto'
 
             restoreCurrent: ->
                 @rules = []
@@ -18,14 +19,29 @@ $(document).ready ->
                     else
                         @currentEl.style.removeProperty 'outline'
 
+                    @currentOutline = ''
+
+                    if @currentZIndex isnt 'auto'
+                        $(@currentEl).css
+                            'z-index': @currentZIndex
+                    else
+                        @currentEl.style.removeProperty 'z-index'
+
+                    @currentZIndex = 'auto'
+
             chooseCurrent: (el)->
                 @currentEl = el
                 $el = $(el)
+
                 @currentOutline = $el.css 'outline'
                 if $el.css('outline-style') is 'none'
                     @currentOutline = ''
+
+                @currentZIndex = $el.css 'z-index'
+
                 $el.css
                     outline: '3px outset #f00'
+                    'z-index': '9999999'
 
             listener: (e)->
                 if @currentEl isnt e.target
@@ -33,17 +49,18 @@ $(document).ready ->
                     @chooseCurrent(e.target)
 
             handleClick: (e)->
+                e.preventDefault()
                 start = Date.now()
                 @restoreCurrent()
                 @getRules @currentEl
                 @getParent @currentEl
                 @open()
-                e.preventDefault()
-                @stopCut()
+                @toggle()
                 console.log "total:", Date.now() - start + 'ms'
 
             getRules: (el)->
                 rules = CSSUtilities.getCSSRules el, '*', 'selector,css'
+#                console.log @css(el)
                 @rules = @rules.concat(rules)
                 for child in el.children
                     @getRules(child)
