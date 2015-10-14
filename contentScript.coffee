@@ -45,15 +45,15 @@ $(document).ready ->
 
             handleClick: (e)->
                 start = Date.now()
-#                rules = CSSUtilities.getCSSRules @currentEl, "*", "selector,css"
                 @rules = []
                 @getRules @currentEl
-                @printRules @rules
                 console.log "total:", Date.now() - start + 'ms'
 
                 @parents = []
                 @getParent @currentEl
-                console.log @parents
+
+                @open()
+
                 e.preventDefault()
 
             getRules: (el)->
@@ -62,7 +62,7 @@ $(document).ready ->
                 for child in el.children
                     @getRules(child)
 
-            printRules: (rules)->
+            generateCss: (rules)->
                 ruleDict = {}
                 for rule in rules
                     unless rule.css.trim()
@@ -86,7 +86,7 @@ $(document).ready ->
                     str += middle.join ';\n'
                     str += "\n}\n"
                     result.push str
-                console.log result.join '\n'
+                return result.join '\n'
 
             getParent: (el)->
                 parentNode = el.parentNode
@@ -95,6 +95,36 @@ $(document).ready ->
                         nodeName: parentNode.nodeName
                         className: parentNode.className
                     @getParent parentNode
+
+            open: ()->
+                w = window.open ""
+                html = @generateHTML()
+                w.document.write html.innerHTML
+
+            generateHTML: ->
+                htmlNode = document.createElement 'HTML'
+
+                headNode = document.createElement 'HEAD'
+
+                styleNode = document.createElement 'STYLE'
+                styleNode.type = 'text/css'
+                styleNode.appendChild document.createTextNode @generateCss @rules
+                headNode.appendChild styleNode
+
+                htmlNode.appendChild headNode
+
+                bodyNode = document.createElement 'BODY'
+                htmlNode.appendChild bodyNode
+                parent = bodyNode
+                for i in [@parents.length - 1..0] by -1
+                    el = @parents[i]
+                    node = document.createElement el.nodeName
+                    node.className = el.className if el.className
+                    parent.appendChild node
+                    parent = node
+
+                parent.appendChild @currentEl.cloneNode true
+                return htmlNode
 
             startCut: ->
                 $(window).on 'mousemove.emu', @listener.bind(this)
