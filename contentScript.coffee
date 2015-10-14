@@ -6,37 +6,26 @@ $(document).ready ->
             constructor: ->
                 @cutting = false
                 @currentEl = null
-                @defaultStyle =
-                    width: 1
-                    height: 1
-                    left: 0
-                    top: 0
-                    background: '#f00'
-                    position: 'absolute'
-                    opacity: 0.1
-                    'z-index': 999999
-                    'pointer-events': 'none'
-                mask = $ '<div/>'
-                mask.css @defaultStyle
-
-                @mask = mask
-                $(document.body).append(@mask)
+                @currentOutline = ''
 
             restoreCurrent: ->
-                @currentEl = null
-                @mask.css @defaultStyle
+                @rules = []
+                @parents = []
+                if @currentEl
+                    if @currentOutline
+                        $(@currentEl).css
+                            outline: @currentOutline
+                    else
+                        @currentEl.style.removeProperty 'outline'
 
             chooseCurrent: (el)->
                 @currentEl = el
                 $el = $(el)
-                offset = $el.offset()
-                width = $el.width()
-                height = $el.height()
-                @mask.css
-                    top: offset.top
-                    left: offset.left
-                    width: width
-                    height: height
+                @currentOutline = $el.css 'outline'
+                if $el.css('outline-style') is 'none'
+                    @currentOutline = ''
+                $el.css
+                    outline: '3px outset #f00'
 
             listener: (e)->
                 if @currentEl isnt e.target
@@ -45,16 +34,13 @@ $(document).ready ->
 
             handleClick: (e)->
                 start = Date.now()
-                @rules = []
+                @restoreCurrent()
                 @getRules @currentEl
-                console.log "total:", Date.now() - start + 'ms'
-
-                @parents = []
                 @getParent @currentEl
-
                 @open()
-
                 e.preventDefault()
+                @stopCut()
+                console.log "total:", Date.now() - start + 'ms'
 
             getRules: (el)->
                 rules = CSSUtilities.getCSSRules el, '*', 'selector,css'
