@@ -31,16 +31,38 @@ $(document).ready ->
                     @$hoverd = $(e.target)
                     @$hoverd.addClass 'emu-hover'
 
+            removeSelected: (index)->
+                @selected[index].removeClass 'emu-selected'
+                @selected.splice index, 1
+
+            addSelected: ($el)->
+                $el.addClass 'emu-selected'
+                @selected.push $el
+
             handleClick: (e)->
-                index = @selected.indexOf e.target
-                if index is -1
-                    @selected.push e.target
-                    $(e.target).addClass 'emu-selected'
+                index = -1
+                for $e, i in @selected
+                    if $e[0] is e.target
+                        index = i
+                if index is -1 # should push this element
+                    $el = $ e.target
+                    founded = false
+                    for $e,i in @selected
+                        if $.contains($e[0], $el[0]) or $.contains($el[0], $e[0])
+                            @removeSelected i
+                            @addSelected $el
+                            founded = true
+                            break
+                    unless founded
+                        @addSelected $el
                 else
-                    $(e.target).removeClass 'emu-selected'
-                    @selected.splice index, 1
+                    @removeSelected index
+
+                if @selected.length > 0
+                    @sender.show()
+                else
+                    @sender.hide()
                 e.preventDefault()
-                @sender.show()
 
             getRules: (el)->
                 rules = CSSUtilities.getCSSRules el, '*', 'selector,css'
