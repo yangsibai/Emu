@@ -16,42 +16,25 @@ $(document).ready ->
             constructor: ->
                 @cutting = false
                 @currentEl = null
-                @currentOutline = ''
-                @currentZIndex = 'auto'
+                @rules = []
+                @parents = []
+                @selected = []
+
+                @sender = $ '<div/>'
+                    .attr 'class', 'emu-send'
+                    .appendTo document.body
 
             restoreCurrent: ->
                 @rules = []
                 @parents = []
-                if @currentEl
-                    if @currentOutline
-                        $(@currentEl).css
-                            outline: @currentOutline
-                    else
-                        @currentEl.style.removeProperty 'outline'
-
-                    @currentOutline = ''
-
-                    if @currentZIndex isnt 'auto'
-                        $(@currentEl).css
-                            'z-index': @currentZIndex
-                    else
-                        @currentEl.style.removeProperty 'z-index'
-
-                    @currentZIndex = 'auto'
+                @$currentEl?.removeClass 'emu-hover'
+                @sender.hide()
 
             chooseCurrent: (el)->
                 @currentEl = el
                 $el = $(el)
-
-                @currentOutline = $el.css 'outline'
-                if $el.css('outline-style') is 'none'
-                    @currentOutline = ''
-
-                @currentZIndex = $el.css 'z-index'
-
-                $el.css
-                    outline: '3px outset #f00'
-                    'z-index': '9999999'
+                $el.addClass 'emu-hover'
+                @$currentEl = $el
 
             listener: (e)->
                 if @currentEl isnt e.target
@@ -59,7 +42,16 @@ $(document).ready ->
                     @chooseCurrent(e.target)
 
             handleClick: (e)->
+                index = @selected.indexOf e.target
+                if index is -1
+                    @selected.push e.target
+                    $(e.target).addClass 'emu-selected'
+                else
+                    $(e.target).removeClass 'emu-selected'
+                    @selected.splice index, 1
                 e.preventDefault()
+                @sender.show()
+                return
                 start = Date.now()
                 @restoreCurrent()
                 @getRules @currentEl
@@ -139,16 +131,21 @@ $(document).ready ->
                 if e.keyCode is 27
                     @toggle()
 
+            handleSendClick: ->
+                console.log @selected
+
             startCut: ->
                 $(window).on 'mousemove.emu', @listener.bind(this)
                 $(window).on 'click.emu', @handleClick.bind(this)
                 $(window).on 'keydown.emu', @handleKeyDown.bind(this)
+                @sender.on 'click.emu', @handleSendClick.bind(this)
 
             stopCut: ->
                 @restoreCurrent()
                 $(window).off 'mousemove.emu'
                 $(window).off 'click.emu'
                 $(window).off 'keydown.emu'
+                @sender.off 'click.emu'
 
             toggle: ->
                 @cutting = not @cutting
