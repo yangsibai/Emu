@@ -19,27 +19,17 @@ $(document).ready ->
                 @rules = []
                 @parents = []
                 @selected = []
+                @$hoverd = null
 
                 @sender = $ '<div/>'
                     .attr 'class', 'emu-send'
                     .appendTo document.body
 
-            restoreCurrent: ->
-                @rules = []
-                @parents = []
-                @$currentEl?.removeClass 'emu-hover'
-                @sender.hide()
-
-            chooseCurrent: (el)->
-                @currentEl = el
-                $el = $(el)
-                $el.addClass 'emu-hover'
-                @$currentEl = $el
-
             handleMouseMove: (e)->
-                if @currentEl isnt e.target
-                    @restoreCurrent()
-                    @chooseCurrent(e.target)
+                if @$hoverd?[0] isnt e.target
+                    @$hoverd?.removeClass 'emu-hover'
+                    @$hoverd = $(e.target)
+                    @$hoverd.addClass 'emu-hover'
 
             handleClick: (e)->
                 index = @selected.indexOf e.target
@@ -51,14 +41,6 @@ $(document).ready ->
                     @selected.splice index, 1
                 e.preventDefault()
                 @sender.show()
-                return
-                start = Date.now()
-                @restoreCurrent()
-                @getRules @currentEl
-                @getParent @currentEl
-                @open()
-                @toggle()
-                console.log "total:", Date.now() - start + 'ms'
 
             getRules: (el)->
                 rules = CSSUtilities.getCSSRules el, '*', 'selector,css'
@@ -124,7 +106,7 @@ $(document).ready ->
                     parent.appendChild node
                     parent = node
 
-                parent.appendChild @currentEl.cloneNode true
+                parent.appendChild @selected[0].cloneNode true
                 return htmlNode
 
             handleKeyDown: (e)->
@@ -132,7 +114,12 @@ $(document).ready ->
                     @toggle()
 
             handleSendClick: ->
-                console.log @selected
+                start = Date.now()
+                @getRules @selected[0]
+                @getParent @selected[0]
+                @open()
+                @toggle()
+                console.log "total:", Date.now() - start + 'ms'
 
             startCut: ->
                 $(window).on 'mousemove.emu', @handleMouseMove.bind(this)
@@ -141,7 +128,7 @@ $(document).ready ->
                 @sender.on 'click.emu', @handleSendClick.bind(this)
 
             stopCut: ->
-                @restoreCurrent()
+                @sender.hide()
                 $(window).off 'mousemove.emu'
                 $(window).off 'click.emu'
                 $(window).off 'keydown.emu'
