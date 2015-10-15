@@ -1,6 +1,16 @@
 $(document).ready ->
+    containCorsCss = ->
+        for i of document.styleSheets
+            if document.styleSheets.hasOwnProperty(i)
+                if document.styleSheets[i].href and (not document.styleSheets[i].cssRules)
+                    return true
+        return false
     CSSUtilities.define 'async', true
-    CSSUtilities.define "mode", "browser"
+    if containCorsCss()
+        CSSUtilities.define "mode", "author"
+    else
+        CSSUtilities.define "mode", "browser"
+
     CSSUtilities.init ->
         class Emu
             constructor: ->
@@ -60,7 +70,6 @@ $(document).ready ->
 
             getRules: (el)->
                 rules = CSSUtilities.getCSSRules el, '*', 'selector,css'
-#                console.log @css(el)
                 @rules = @rules.concat(rules)
                 for child in el.children
                     @getRules(child)
@@ -94,9 +103,7 @@ $(document).ready ->
             getParent: (el)->
                 parentNode = el.parentNode
                 if parentNode and parentNode.nodeName isnt 'BODY'
-                    @parents.push
-                        nodeName: parentNode.nodeName
-                        className: parentNode.className
+                    @parents.push parentNode
                     @getParent parentNode
 
             open: ()->
@@ -121,22 +128,27 @@ $(document).ready ->
                 parent = bodyNode
                 for i in [@parents.length - 1..0] by -1
                     el = @parents[i]
-                    node = document.createElement el.nodeName
-                    node.className = el.className if el.className
+                    node = el.cloneNode false
                     parent.appendChild node
                     parent = node
 
                 parent.appendChild @currentEl.cloneNode true
                 return htmlNode
 
+            handleKeyDown: (e)->
+                if e.keyCode is 27
+                    @toggle()
+
             startCut: ->
                 $(window).on 'mousemove.emu', @listener.bind(this)
                 $(window).on 'click.emu', @handleClick.bind(this)
+                $(window).on 'keydown.emu', @handleKeyDown.bind(this)
 
             stopCut: ->
                 @restoreCurrent()
                 $(window).off 'mousemove.emu'
                 $(window).off 'click.emu'
+                $(window).off 'keydown.emu'
 
             toggle: ->
                 @cutting = not @cutting
