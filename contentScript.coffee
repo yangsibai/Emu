@@ -36,7 +36,7 @@ $(document).ready ->
                 $el.addClass 'emu-hover'
                 @$currentEl = $el
 
-            listener: (e)->
+            handleMouseMove: (e)->
                 if @currentEl isnt e.target
                     @restoreCurrent()
                     @chooseCurrent(e.target)
@@ -135,7 +135,7 @@ $(document).ready ->
                 console.log @selected
 
             startCut: ->
-                $(window).on 'mousemove.emu', @listener.bind(this)
+                $(window).on 'mousemove.emu', @handleMouseMove.bind(this)
                 $(window).on 'click.emu', @handleClick.bind(this)
                 $(window).on 'keydown.emu', @handleKeyDown.bind(this)
                 @sender.on 'click.emu', @handleSendClick.bind(this)
