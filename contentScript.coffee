@@ -15,7 +15,6 @@ $(document).ready ->
         class Emu
             constructor: ->
                 @cutting = false
-                @currentEl = null
                 @rules = []
                 @parents = []
                 @selected = []
