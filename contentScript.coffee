@@ -63,11 +63,11 @@ $(document).ready ->
                     @sender.hide()
                 e.preventDefault()
 
-            getRules: (el)->
+            getRules: (el, results)->
                 rules = CSSUtilities.getCSSRules el, '*', 'selector,css'
-                @rules = @rules.concat(rules)
+                results = results.concat rules
                 for child in el.children
-                    @getRules(child)
+                    @getRules child, results
 
             generateCss: (rules)->
                 ruleDict = {}
@@ -95,25 +95,20 @@ $(document).ready ->
                     result.push str
                 return result.join '\n'
 
-            getParent: (el)->
+            getParent: (el, parents)->
                 parentNode = el.parentNode
                 if parentNode and parentNode.nodeName isnt 'BODY'
-                    @parents.push parentNode
-                    @getParent parentNode
+                    parents.push parentNode
+                    @getParent parentNode, parents
 
-            open: ()->
-                w = window.open ""
-                html = @generateHTML()
-                w.document.write html.innerHTML
-
-            generateHTML: ->
+            generateHTML: (el, parents, rules)->
                 htmlNode = document.createElement 'HTML'
 
                 headNode = document.createElement 'HEAD'
 
                 styleNode = document.createElement 'STYLE'
                 styleNode.type = 'text/css'
-                styleNode.appendChild document.createTextNode @generateCss @rules
+                styleNode.appendChild document.createTextNode @generateCss rules
                 headNode.appendChild styleNode
 
                 htmlNode.appendChild headNode
@@ -121,13 +116,13 @@ $(document).ready ->
                 bodyNode = document.createElement 'BODY'
                 htmlNode.appendChild bodyNode
                 parent = bodyNode
-                for i in [@parents.length - 1..0] by -1
-                    el = @parents[i]
+                for i in [parents.length - 1..0] by -1
+                    el = parents[i]
                     node = el.cloneNode false
                     parent.appendChild node
                     parent = node
 
-                parent.appendChild @selected[0].cloneNode true
+                parent.appendChild el.cloneNode true
                 return htmlNode
 
             handleKeyDown: (e)->
@@ -136,9 +131,17 @@ $(document).ready ->
 
             handleSendClick: ->
                 start = Date.now()
-                @getRules @selected[0]
-                @getParent @selected[0]
-                @open()
+                rules = []
+                element = @selected[0][0]
+                @getRules element, rules
+
+                parents = []
+                @getParent element, parents
+
+                w = window.open ""
+                html = @generateHTML element, parents, rules
+                w.document.write html.innerHTML
+
                 @toggle()
                 console.log "total:", Date.now() - start + 'ms'
 
@@ -154,6 +157,8 @@ $(document).ready ->
                 $(window).off 'click.emu'
                 $(window).off 'keydown.emu'
                 @sender.off 'click.emu'
+                for $el in @selected
+                    $el.removeClass 'emu-selected'
 
             toggle: ->
                 @cutting = not @cutting
