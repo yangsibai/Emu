@@ -15,8 +15,6 @@ $(document).ready ->
         class Emu
             constructor: ->
                 @cutting = false
-                @rules = []
-                @parents = []
                 @selected = []
                 @$hoverd = null
 
@@ -29,6 +27,24 @@ $(document).ready ->
                     @$hoverd?.removeClass 'emu-hover'
                     @$hoverd = $(e.target)
                     @$hoverd.addClass 'emu-hover'
+
+            handleKeyDown: (e)->
+                if e.keyCode is 27
+                    @toggle()
+
+            handleSendClick: ->
+                start = Date.now()
+                for $el in @selected
+                    $el.removeClass 'emu-selected'
+
+                @markSelected() # mark all selected nodes
+
+                w = window.open ""
+                html = @generateHTML()
+                w.document.write html.innerHTML
+
+                @toggle()
+                console.log "total:", Date.now() - start + 'ms'
 
             removeSelected: (index)->
                 @selected[index].removeClass 'emu-selected'
@@ -65,7 +81,8 @@ $(document).ready ->
 
             getRules: (el, results)->
                 rules = CSSUtilities.getCSSRules el, '*', 'selector,css'
-                results = results.concat rules
+                for rule in rules
+                    results.push rule
                 for child in el.children
                     @getRules child, results
 
@@ -101,7 +118,13 @@ $(document).ready ->
                     parents.push parentNode
                     @getParent parentNode, parents
 
-            generateHTML: (el, parents, rules)->
+            generateHTML: ->
+                rules = []
+                for $el in @selected
+                    @getRules $el[0], rules
+                    console.log rules
+                console.log rules
+
                 htmlNode = document.createElement 'HTML'
 
                 headNode = document.createElement 'HEAD'
@@ -114,36 +137,32 @@ $(document).ready ->
                 htmlNode.appendChild headNode
 
                 bodyNode = document.createElement 'BODY'
-                htmlNode.appendChild bodyNode
-                parent = bodyNode
-                for i in [parents.length - 1..0] by -1
-                    el = parents[i]
-                    node = el.cloneNode false
-                    parent.appendChild node
-                    parent = node
 
-                parent.appendChild el.cloneNode true
+                @appendSelected document.body, bodyNode
+                htmlNode.appendChild bodyNode
                 return htmlNode
 
-            handleKeyDown: (e)->
-                if e.keyCode is 27
-                    @toggle()
+            appendSelected: (parent, appendTo)->
+                for node in parent.childNodes
+                    if node.isSelected
+                        appendTo.appendChild node.cloneNode true
+                    else if node.hasSelected
+                        clonedNode = node.cloneNode false
+                        appendTo.appendChild clonedNode
+                        @appendSelected node, clonedNode
 
-            handleSendClick: ->
-                start = Date.now()
-                rules = []
-                element = @selected[0][0]
-                @getRules element, rules
+            markSelected: ()->
+                for $el in @selected
+                    $el[0].isSelected = true
+                    @mark $el[0]
 
-                parents = []
-                @getParent element, parents
+            mark: (el)->
+                el.hasSelected = true
+                if el.parentNode
+                    @mark el.parentNode
 
-                w = window.open ""
-                html = @generateHTML element, parents, rules
-                w.document.write html.innerHTML
-
-                @toggle()
-                console.log "total:", Date.now() - start + 'ms'
+            hasSelected: (node)->
+                return node.hasSelected
 
             startCut: ->
                 $(window).on 'mousemove.emu', @handleMouseMove.bind(this)
@@ -152,13 +171,12 @@ $(document).ready ->
                 @sender.on 'click.emu', @handleSendClick.bind(this)
 
             stopCut: ->
+                @selected = []
                 @sender.hide()
                 $(window).off 'mousemove.emu'
                 $(window).off 'click.emu'
                 $(window).off 'keydown.emu'
                 @sender.off 'click.emu'
-                for $el in @selected
-                    $el.removeClass 'emu-selected'
 
             toggle: ->
                 @cutting = not @cutting
