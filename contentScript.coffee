@@ -33,10 +33,10 @@ $(document).ready ->
                     @toggle()
 
             handleSendClick: ->
-                start = Date.now()
                 for $el in @selected
                     $el.removeClass 'emu-selected'
 
+                start = Date.now()
                 @markSelected() # mark all selected nodes
 
                 w = window.open ""
@@ -44,7 +44,7 @@ $(document).ready ->
                 w.document.write html.innerHTML
 
                 @toggle()
-                console.log "total:", Date.now() - start + 'ms'
+                console.log "total:", Date.now() - start + 'ms, length:', html.innerHTML.length
 
             removeSelected: (index)->
                 @selected[index].removeClass 'emu-selected'
@@ -80,7 +80,9 @@ $(document).ready ->
                 e.preventDefault()
 
             getRules: (el, results)->
+                start = Date.now()
                 rules = CSSUtilities.getCSSRules el, '*', 'selector,css'
+                console.log 'fetch rules elapsed time:', Date.now() - start
                 for rule in rules
                     results.push rule
                 for child in el.children
@@ -152,12 +154,17 @@ $(document).ready ->
             markSelected: ()->
                 for $el in @selected
                     $el[0].isSelected = true
-                    @mark $el[0]
+                    @mark $el[0], true
 
-            mark: (el)->
-                el.hasSelected = true
+            mark: (el, selected)->
+                el.hasSelected = selected
                 if el.parentNode
                     @mark el.parentNode
+
+            unMarkSelected: ->
+                for $el in @selected
+                    $el[0].isSelected = false
+                    @mark $el[0], false
 
             hasSelected: (node)->
                 return node.hasSelected
@@ -169,6 +176,7 @@ $(document).ready ->
                 @sender.on 'click.emu', @handleSendClick.bind(this)
 
             stopCut: ->
+                @unMarkSelected()
                 @selected = []
                 @sender.hide()
                 $(window).off 'mousemove.emu'
