@@ -79,15 +79,6 @@ $(document).ready ->
                     @sender.hide()
                 e.preventDefault()
 
-            getRules: (el, results)->
-                start = Date.now()
-                rules = CSSUtilities.getCSSRules el, '*', 'selector,css'
-                console.log 'fetch rules elapsed time:', Date.now() - start
-                for rule in rules
-                    results.push rule
-                for child in el.children
-                    @getRules child, results
-
             generateCss: (rules)->
                 ruleDict = {}
                 for rule in rules
@@ -121,33 +112,37 @@ $(document).ready ->
                     @getParent parentNode, parents
 
             generateHTML: ->
-                rules = []
-                for $el in @selected
-                    @getRules $el[0], rules
-
                 htmlNode = document.createElement 'HTML'
 
                 headNode = document.createElement 'HEAD'
 
                 styleNode = document.createElement 'STYLE'
                 styleNode.type = 'text/css'
-                styleNode.appendChild document.createTextNode @generateCss rules
+#                styleNode.appendChild document.createTextNode @generateCss rules
                 headNode.appendChild styleNode
 
                 htmlNode.appendChild headNode
-                bodyNode = document.createElement 'BODY'
-                @appendSelected document.body, bodyNode
+                bodyNode = document.body.cloneNode false
+                cssRules = [
+                    @css document.body.parentNode
+                    @css document.body
+                ]
+                @appendSelected document.body, bodyNode, cssRules
+                styleNode.appendChild document.createTextNode cssRules.join '\n'
                 htmlNode.appendChild bodyNode
                 return htmlNode
 
-            appendSelected: (parent, appendTo)->
+            appendSelected: (parent, appendTo, rules)->
                 for node in parent.childNodes
-                    if node.isSelected
-                        appendTo.appendChild node.cloneNode true
-                    else if node.hasSelected
-                        clonedNode = node.cloneNode false
-                        appendTo.appendChild clonedNode
-                        @appendSelected node, clonedNode
+                    if node.hasSelected
+                        if node.isSelected
+                            rules.push @allCss node
+                            appendTo.appendChild node.cloneNode true
+                        else
+                            rules.push @css node
+                            clonedNode = node.cloneNode false
+                            appendTo.appendChild clonedNode
+                            @appendSelected node, clonedNode, rules
 
             markSelected: ()->
                 for $el in @selected
@@ -188,6 +183,27 @@ $(document).ready ->
                     @startCut()
                 else
                     @stopCut()
+
+            css: (el)->
+                rules = []
+                for sheet in document.styleSheets
+                    cssRules = sheet.cssRules
+                    if cssRules
+                        for rule in cssRules
+                            if el.matches? rule.selectorText
+                                rules.push rule.cssText
+                return rules.join('\n')
+
+            _allCss: (el, rules)->
+                css = @css el
+                rules.push css if css
+                for child in el.childNodes
+                    @_allCss child, rules
+
+            allCss: (el)->
+                rules = []
+                @_allCss el, rules
+                return rules.join '\n'
 
         emu = new Emu()
         chrome.runtime.onMessage.addListener (msg)->
