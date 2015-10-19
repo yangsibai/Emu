@@ -122,8 +122,6 @@ $(document).ready ->
                 rules = []
                 for $el in @selected
                     @getRules $el[0], rules
-                    console.log rules
-                console.log rules
 
                 htmlNode = document.createElement 'HTML'
 
