@@ -135,9 +135,7 @@ $(document).ready ->
                 headNode.appendChild styleNode
 
                 htmlNode.appendChild headNode
-
                 bodyNode = document.createElement 'BODY'
-
                 @appendSelected document.body, bodyNode
                 htmlNode.appendChild bodyNode
                 return htmlNode
@@ -159,7 +157,7 @@ $(document).ready ->
             mark: (el, selected)->
                 el.hasSelected = selected
                 if el.parentNode
-                    @mark el.parentNode
+                    @mark el.parentNode, selected
 
             unMarkSelected: ->
                 for $el in @selected
