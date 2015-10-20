@@ -90,11 +90,14 @@ $(document).ready ->
 
             titleNode = document.createElement 'TITLE'
             titleNode.appendChild document.createTextNode document.title
-
             headNode.appendChild titleNode
 
+            baseNode = document.createElement 'BASE'
+            baseNode.setAttribute 'href', location.href
+            headNode.appendChild baseNode
+
             htmlNode.appendChild headNode
-            bodyNode = document.body.cloneNode false
+            bodyNode = @shallowClone document.body
             @markMatchedCSS document.body.parentNode
             @markMatchedCSS document.body
             @appendSelected document.body, bodyNode
@@ -105,6 +108,12 @@ $(document).ready ->
             htmlNode.appendChild bodyNode
             return htmlNode
 
+        shallowClone: (node)->
+            newNode = document.createElement node.tagName
+            newNode.className = node.className if node.className
+            newNode.id = node.id if node.id
+            return newNode
+
         appendSelected: (parent, appendTo)->
             for node in parent.childNodes
                 continue unless node.hasSelected
@@ -113,7 +122,7 @@ $(document).ready ->
                     appendTo.appendChild node.cloneNode true
                 else
                     @markMatchedCSS node
-                    clonedNode = node.cloneNode false
+                    clonedNode = @shallowClone node
                     appendTo.appendChild clonedNode
                     @appendSelected node, clonedNode
 
