@@ -112,6 +112,9 @@ $(document).ready ->
             newNode = document.createElement node.tagName
             newNode.className = node.className if node.className
             newNode.id = node.id if node.id
+            style = node.getAttribute 'style'
+            if style
+                newNode.setAttribute 'style', style
             return newNode
 
         appendSelected: (parent, appendTo)->
