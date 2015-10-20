@@ -32,8 +32,8 @@ $(document).ready ->
             html = @generateHTML()
             w.document.write html.innerHTML
 
-            @toggle()
             console.log "total:", Date.now() - start + 'ms, length:', html.innerHTML.length
+            @toggle()
 
         removeSelected: (index)->
             @selected[index].removeClass 'emu-selected'
@@ -157,7 +157,8 @@ $(document).ready ->
         markMatchedCSS: (el)->
             return unless el.nodeType is Node.ELEMENT_NODE
             signature = @getNodeSignature el
-            return if @hasMarked[signature]
+            if @hasMarked[signature]
+                @hasMarked[signature] = @hasMarked[signature] + 1
             for k, sheet of document.styleSheets
                 continue if (not document.styleSheets.hasOwnProperty(k)) or (not sheet.cssRules)
                 for k2, rule of sheet.cssRules
@@ -166,7 +167,7 @@ $(document).ready ->
                         unless @cssMarked[k]
                             @cssMarked[k] = {}
                         @cssMarked[k][k2] = rule.cssText
-                        @hasMarked[signature] = true
+                        @hasMarked[signature] = 1
 
         getNodeSignature: (node)->
             signature = [
