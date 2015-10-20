@@ -89,8 +89,8 @@ $(document).ready ->
 
             htmlNode.appendChild headNode
             bodyNode = document.body.cloneNode false
-            @css document.body.parentNode
-            @css document.body
+            @markMatchedCSS document.body.parentNode
+            @markMatchedCSS document.body
             @appendSelected document.body, bodyNode
             styleNode = document.createElement 'STYLE'
             styleNode.type = 'text/css'
@@ -103,10 +103,10 @@ $(document).ready ->
             for node in parent.childNodes
                 continue unless node.hasSelected
                 if node.isSelected
-                    @allCss node
+                    @markAllMatchedCSS node
                     appendTo.appendChild node.cloneNode true
                 else
-                    @css node
+                    @markMatchedCSS node
                     clonedNode = node.cloneNode false
                     appendTo.appendChild clonedNode
                     @appendSelected node, clonedNode
@@ -152,7 +152,7 @@ $(document).ready ->
             else
                 @stopCut()
 
-        css: (el)->
+        markMatchedCSS: (el)->
             for k, sheet of document.styleSheets
                 continue if (not document.styleSheets.hasOwnProperty(k)) or (not sheet.cssRules)
                 for k2, rule of sheet.cssRules
@@ -162,10 +162,10 @@ $(document).ready ->
                             @cssMarked[k] = {}
                         @cssMarked[k][k2] = rule.cssText
 
-        allCss: (el)->
-            @css el
+        markAllMatchedCSS: (el)->
+            @markMatchedCSS el
             for child in el.childNodes
-                @allCss child
+                @markAllMatchedCSS child
 
     emu = new Emu()
     chrome.runtime.onMessage.addListener (msg)->
