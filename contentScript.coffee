@@ -88,6 +88,11 @@ $(document).ready ->
 
             headNode = document.createElement 'HEAD'
 
+            titleNode = document.createElement 'TITLE'
+            titleNode.appendChild document.createTextNode document.title
+
+            headNode.appendChild titleNode
+
             htmlNode.appendChild headNode
             bodyNode = document.body.cloneNode false
             @markMatchedCSS document.body.parentNode
