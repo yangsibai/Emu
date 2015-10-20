@@ -5,6 +5,7 @@ $(document).ready ->
             @selected = []
             @$hoverd = null
             @cssMarked = {}
+            @hasMarked = {}
 
             @sender = $ '<div/>'
                 .attr 'class', 'emu-send'
@@ -140,6 +141,7 @@ $(document).ready ->
             @selected = []
             @sender.hide()
             @cssMarked = {}
+            @hasMarked = {}
             $(window).off 'mousemove.emu'
             $(window).off 'click.emu'
             $(window).off 'keydown.emu'
@@ -153,6 +155,9 @@ $(document).ready ->
                 @stopCut()
 
         markMatchedCSS: (el)->
+            return unless el.nodeType is Node.ELEMENT_NODE
+            signature = @getNodeSignature el
+            return if @hasMarked[signature]
             for k, sheet of document.styleSheets
                 continue if (not document.styleSheets.hasOwnProperty(k)) or (not sheet.cssRules)
                 for k2, rule of sheet.cssRules
@@ -161,6 +166,19 @@ $(document).ready ->
                         unless @cssMarked[k]
                             @cssMarked[k] = {}
                         @cssMarked[k][k2] = rule.cssText
+                        @hasMarked[signature] = true
+
+        getNodeSignature: (node)->
+            signature = [
+                @getNodeHash node
+            ]
+            while node.parentNode?.nodeType is Node.ELEMENT_NODE
+                signature.unshift @getNodeHash node.parentNode
+                node = node.parentNode
+            return signature.join '>'
+
+        getNodeHash: (node)->
+            return node.tagName + ':' + node.className + ':' + node.id
 
         markAllMatchedCSS: (el)->
             @markMatchedCSS el
