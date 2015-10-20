@@ -7,8 +7,12 @@ $(document).ready ->
             @cssMarked = {}
             @hasMarked = {}
 
+            $icon = $ '<img/>'
+                .attr 'src', chrome.extension.getURL 'icons/paperfly.png'
+
             @sender = $ '<div/>'
                 .attr 'class', 'emu-send'
+                .append $icon
                 .appendTo document.body
 
         handleMouseMove: (e)->

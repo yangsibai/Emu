@@ -25,5 +25,8 @@
         "matches": ["<all_urls>"],
         "css": ["style.css"],
         "js": ["lib/jquery-2.0.3.min.js", "contentScript.js"]
-    }]
+    }],
+    "web_accessible_resources": [
+        "icons/paperfly.png"
+    ]
 }
