@@ -91,6 +91,10 @@ class Emu
 
         headNode = document.createElement 'HEAD'
 
+        for node in document.head.childNodes
+            if node.tagName is 'META'
+                headNode.appendChild node.cloneNode false
+
         titleNode = document.createElement 'TITLE'
         titleNode.appendChild document.createTextNode document.title
         headNode.appendChild titleNode
