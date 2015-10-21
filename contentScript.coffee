@@ -33,7 +33,7 @@ class Emu
         @markSelected() # mark all selected nodes
 
         html = @generateHTML()
-        @download document.title + '.html', html.innerHTML
+        @download (document.title or location.href or 'document') + '.html', html.innerHTML
 
         console.log "total:", Date.now() - start + 'ms, length:', html.innerHTML.length
         @toggle()
