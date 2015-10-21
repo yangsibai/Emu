@@ -92,12 +92,8 @@ class Emu
         headNode = document.createElement 'HEAD'
 
         for node in document.head.childNodes
-            if node.tagName is 'META'
-                headNode.appendChild node.cloneNode false
-
-        titleNode = document.createElement 'TITLE'
-        titleNode.appendChild document.createTextNode document.title
-        headNode.appendChild titleNode
+            if node.tagName in ['META', 'TITLE']
+                headNode.appendChild node.cloneNode true
 
         baseNode = document.createElement 'BASE'
         baseNode.setAttribute 'href', location.href
