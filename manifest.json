@@ -1,10 +1,11 @@
 {
     "name": "Emu",
     "manifest_version": 2,
-    "version": "0.0.3",
-    "description": "Webpage cutting and collecting",
+    "version": "0.0.4",
+    "description": "What you select is what you get.",
     "permissions": [
-        "<all_urls>"
+        "<all_urls>",
+        "downloads"
     ],
     "icons": {
         "16": "icons/16.png",
@@ -13,7 +14,7 @@
         "48": "icons/48.png"
     },
     "browser_action": {
-        "default_title": "Emu",
+        "default_title": "Click and select anything you like",
         "default_icon": "icons/24.png"
     },
     "background": {
