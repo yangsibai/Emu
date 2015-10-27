@@ -21,9 +21,7 @@ chrome.browserAction.onClicked.addListener (tab)->
     chrome.tabs.sendMessage tab.id, 'start'
 
 chrome.runtime.onMessage.addListener (request, sender, sendResponse)->
-    console.log request.name
-    console.log sanitizeFileName request.name
     chrome.downloads.download
         url: 'data:text/html;charset=utf-8,' + encodeURIComponent(request.content)
-        filename: sanitizeFileName request.name
+        filename: 'pages/' + sanitizeFileName(request.name)
     sendResponse()
