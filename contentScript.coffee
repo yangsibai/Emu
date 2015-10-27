@@ -1,3 +1,12 @@
+utils =
+    objToString: Object.prototype.toString
+
+    isCSSStyleRule: (rule)->
+        @objToString.call rule is '[object CSSStyleRule]'
+
+    isCSSMediaRule: (rule)->
+        @objToString.call rule is '[object CSSMediaRule]'
+
 class Emu
     constructor: ->
         @cutting = false
@@ -22,21 +31,25 @@ class Emu
             @$hoverd.addClass 'emu-hover'
 
     handleKeyDown: (e)->
-        if e.keyCode is 27
-            @toggle()
+        @stopCut() if e.keyCode is 27
 
     handleSendClick: ->
+        @sender.addClass 'emu-has-selected'
+        @removeAllSelectedClass()
+        setTimeout =>
+            start = Date.now()
+            @markSelected() # mark all selected nodes
+
+            html = @generateHTML()
+            @download (document.title or location.href or 'document') + '.html', html.innerHTML
+
+            console.log "total:", Date.now() - start + 'ms, length:', html.innerHTML.length
+            @stopCut()
+        , 1
+
+    removeAllSelectedClass: ->
         for $el in @selected
             $el.removeClass 'emu-selected'
-
-        start = Date.now()
-        @markSelected() # mark all selected nodes
-
-        html = @generateHTML()
-        @download (document.title or location.href or 'document') + '.html', html.innerHTML
-
-        console.log "total:", Date.now() - start + 'ms, length:', html.innerHTML.length
-        @toggle()
 
     removeSelected: (index)->
         @selected[index].removeClass 'emu-selected'
@@ -157,6 +170,7 @@ class Emu
         @sender.on 'click.emu', @handleSendClick.bind(this)
 
     stopCut: ->
+        @removeAllSelectedClass()
         @unMarkSelected()
         @selected = []
         @sender.hide()

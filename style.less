@@ -11,8 +11,8 @@
 .emu-send {
     position: fixed;
     background-color: rgba(255, 220, 54, 0.8);;
-    width: 50px;
-    height: 50px;
+    width: 64px;
+    height: 64px;
     border-radius: 100px;
     right: 20px;
     top: 20px;
@@ -21,9 +21,22 @@
     display: none;
     outline: none !important;
     img {
-        width: 63px;
+        width: 64px;
         height: 64px;
         outline: none !important;
+    }
+}
+
+.emu-has-selected {
+    animation: circle 1.5s linear 0s infinite normal;
+}
+
+@-webkit-keyframes circle {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
     }
 }
 
