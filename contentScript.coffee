@@ -197,11 +197,14 @@ class Emu
             continue if (not document.styleSheets.hasOwnProperty(k)) or (not sheet.cssRules)
             for k2, rule of sheet.cssRules
                 continue if (not sheet.cssRules.hasOwnProperty(k2)) or (not rule.cssText) or (@cssMarked[k]?[k2])
-                if el.matches? rule.selectorText
-                    unless @cssMarked[k]
-                        @cssMarked[k] = {}
-                    @cssMarked[k][k2] = rule.cssText
-                    @hasMarked[signature] = 1
+                try
+                    if el.matches? rule.selectorText
+                        unless @cssMarked[k]
+                            @cssMarked[k] = {}
+                        @cssMarked[k][k2] = rule.cssText
+                        @hasMarked[signature] = 1
+                catch e
+                    console.error e
 
     getNodeSignature: (node)->
         signature = [
