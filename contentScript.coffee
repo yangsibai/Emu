@@ -17,12 +17,12 @@ class Emu
         @ready = false
 
         $icon = $ '<img/>'
-            .attr 'src', chrome.extension.getURL 'icons/paperfly.png'
+        .attr 'src', chrome.extension.getURL 'icons/paperfly.png'
 
         @sender = $ '<div/>'
-            .attr 'class', 'emu-send'
-            .append $icon
-            .appendTo document.body
+        .attr 'class', 'emu-send'
+        .append $icon
+        .appendTo document.body
 
     handleMouseMove: (e)->
         if @$hoverd?[0] isnt e.target
@@ -33,7 +33,7 @@ class Emu
     handleKeyDown: (e)->
         @stopCut() if e.keyCode is 27
 
-    handleSendClick: ->
+    handleSendClick: (e)->
         @sender.addClass 'emu-has-selected'
         @removeAllSelectedClass()
         setTimeout =>
@@ -46,6 +46,7 @@ class Emu
             console.log "total:", Date.now() - start + 'ms, length:', html.innerHTML.length
             @stopCut()
         , 1
+        e.stopPropagation()
 
     removeAllSelectedClass: ->
         for $el in @selected
