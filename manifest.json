@@ -1,7 +1,7 @@
 {
     "name": "Emu",
     "manifest_version": 2,
-    "version": "0.0.4",
+    "version": "0.0.5",
     "description": "What you select is what you get.",
     "permissions": [
         "<all_urls>",

@@ -10,7 +10,7 @@ utils =
 class Emu
     constructor: ->
         @cutting = false
-        @selected = []
+        @selected = null
         @$hoverd = null
         @cssMarked = {}
         @hasMarked = {}
@@ -35,10 +35,11 @@ class Emu
 
     handleSendClick: (e)->
         @sender.addClass 'emu-has-selected'
-        @removeAllSelectedClass()
+        @removeSelectedClassname()
         setTimeout =>
             start = Date.now()
-            @markSelected() # mark all selected nodes
+            @selected[0].isSelected = true # mark all selected nodes
+            @mark @selected[0], true
 
             html = @generateHTML()
             @download (document.title or location.href or 'document') + '.html', html.innerHTML
@@ -48,41 +49,15 @@ class Emu
         , 1
         e.stopPropagation()
 
-    removeAllSelectedClass: ->
-        for $el in @selected
-            $el.removeClass 'emu-selected'
-
-    removeSelected: (index)->
-        @selected[index].removeClass 'emu-selected'
-        @selected.splice index, 1
-
-    addSelected: ($el)->
-        $el.addClass 'emu-selected'
-        @selected.push $el
+    removeSelectedClassname: ->
+        @selected?.removeClass 'emu-selected'
 
     handleClick: (e)->
-        index = -1
-        for $e, i in @selected
-            if $e[0] is e.target
-                index = i
-        if index is -1 # should push this element
-            $el = $ e.target
-            founded = false
-            for $e,i in @selected
-                if $.contains($e[0], $el[0]) or $.contains($el[0], $e[0])
-                    @removeSelected i
-                    @addSelected $el
-                    founded = true
-                    break
-            unless founded
-                @addSelected $el
-        else
-            @removeSelected index
-
-        if @selected.length > 0
-            @sender.show()
-        else
-            @sender.hide()
+        @removeSelectedClassname()
+        $el = $ e.target
+        $el.addClass 'emu-selected'
+        @selected = $el
+        @sender.show()
         e.preventDefault()
 
     generateCss: ->
@@ -146,20 +121,10 @@ class Emu
                 appendTo.appendChild clonedNode
                 @appendSelected node, clonedNode
 
-    markSelected: ()->
-        for $el in @selected
-            $el[0].isSelected = true
-            @mark $el[0], true
-
     mark: (el, selected)->
         el.hasSelected = selected
         if el.parentNode
             @mark el.parentNode, selected
-
-    unMarkSelected: ->
-        for $el in @selected
-            $el[0].isSelected = false
-            @mark $el[0], false
 
     hasSelected: (node)->
         return node.hasSelected
@@ -171,9 +136,11 @@ class Emu
         @sender.on 'click.emu', @handleSendClick.bind(this)
 
     stopCut: ->
-        @removeAllSelectedClass()
-        @unMarkSelected()
-        @selected = []
+        @removeSelectedClassname()
+        if @selected
+            @selected[0].isSelected = false
+            @mark @selected[0], false
+            @selected = null
         @sender.hide()
         @cssMarked = {}
         @hasMarked = {}
