@@ -3,11 +3,6 @@ controlRe = /[\x00-\x1f\x80-\x9f]/g
 reservedRe = /^\.+$/
 windowsReservedRe = /^(con|prn|aux|nul|com[0-9]|lpt[0-9])(\..*)?$/i
 
-truncate = (str, maxByteSize)->
-    buffer = new Buffer(maxByteSize)
-    written = buffer.write(str, "utf8")
-    return buffer.toString("utf8", 0, written)
-
 sanitizeFileName = (fileName)->
     replacement = '_'
     sanitized = fileName

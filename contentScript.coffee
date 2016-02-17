@@ -7,6 +7,10 @@ utils =
     isCSSMediaRule: (rule)->
         @objToString.call rule is '[object CSSMediaRule]'
 
+CLASS_NAME_SELECTED = 'emu-selected'
+CLASS_NAME_HOVER = 'emu-hover'
+CLASS_NAME_HAS_SELECTED = 'emu-has-selected'
+
 class Emu
     constructor: ->
         @cutting = false
@@ -18,23 +22,48 @@ class Emu
 
         $icon = $ '<img/>'
         .attr 'src', chrome.extension.getURL 'icons/paperfly.png'
+        @icon = $icon
+
+        $range = $ '<input type="range" min="1" max="10" value="1" />'
+        @range = $range
+        $control = $ '<div/>'
+        .attr 'class', 'emu-control'
+        .append $range
 
         @sender = $ '<div/>'
         .attr 'class', 'emu-send'
         .append $icon
+        .append $control
         .appendTo document.body
 
     handleMouseMove: (e)->
+        if @sender.has(e.target).length isnt 0
+            return
         if @$hoverd?[0] isnt e.target
-            @$hoverd?.removeClass 'emu-hover'
+            @$hoverd?.removeClass CLASS_NAME_HOVER
             @$hoverd = $(e.target)
-            @$hoverd.addClass 'emu-hover'
+            @$hoverd.addClass CLASS_NAME_HOVER
+
+    handleMouseClick: (e)->
+        if @sender.has(e.target).length isnt 0
+            return
+
+        @removeSelectedClassname()
+        $el = $ e.target
+        $el.addClass CLASS_NAME_SELECTED
+        @selected and @selected.removeClass CLASS_NAME_SELECTED
+        @selected = $el
+        depth = @getNodeDepth e.target
+        @range.attr('max', depth).val(1)
+        @sender.show()
+        e.preventDefault()
 
     handleKeyDown: (e)->
         @stopCut() if e.keyCode is 27
 
     handleSendClick: (e)->
-        @sender.addClass 'emu-has-selected'
+        @selected = $(".#{CLASS_NAME_SELECTED}")
+        @sender.addClass CLASS_NAME_HAS_SELECTED
         @removeSelectedClassname()
         setTimeout =>
             start = Date.now()
@@ -49,16 +78,17 @@ class Emu
         , 1
         e.stopPropagation()
 
-    removeSelectedClassname: ->
-        @selected?.removeClass 'emu-selected'
+    handleRangeChange: (e)->
+        depth = e.target.value
+        targetElement = @selected[0]
+        if depth > 1
+            for i in [1..depth - 1]
+                targetElement = targetElement.parentNode
+        $(".#{CLASS_NAME_SELECTED}").removeClass CLASS_NAME_SELECTED
+        $(targetElement).addClass CLASS_NAME_SELECTED
 
-    handleClick: (e)->
-        @removeSelectedClassname()
-        $el = $ e.target
-        $el.addClass 'emu-selected'
-        @selected = $el
-        @sender.show()
-        e.preventDefault()
+    removeSelectedClassname: ->
+        @selected?.removeClass CLASS_NAME_SELECTED
 
     generateCss: ->
         results = []
@@ -131,9 +161,10 @@ class Emu
 
     startCut: ->
         $(window).on 'mousemove.emu', @handleMouseMove.bind(this)
-        $(window).on 'click.emu', @handleClick.bind(this)
+        $(window).on 'click.emu', @handleMouseClick.bind(this)
         $(window).on 'keydown.emu', @handleKeyDown.bind(this)
-        @sender.on 'click.emu', @handleSendClick.bind(this)
+        @icon.on 'click.emu', @handleSendClick.bind(this)
+        @range.on 'input', @handleRangeChange.bind(this)
 
     stopCut: ->
         @removeSelectedClassname()
@@ -182,6 +213,13 @@ class Emu
             signature.unshift @getNodeHash node.parentNode
             node = node.parentNode
         return signature.join '>'
+
+    getNodeDepth: (node)->
+        depth = 1
+        while node.parentNode?.nodeType is Node.ELEMENT_NODE and node.parentNode isnt document.documentElement
+            depth = depth + 1
+            node = node.parentNode
+        return depth
 
     getNodeHash: (node)->
         return node.tagName + ':' + node.className + ':' + node.id

@@ -1,29 +1,40 @@
+@max-zIndex: 2147483647;
+@bg-color: #DDD;
+@hover-outline: 1px dotted #ff0000 !important;
+@selected-outline: 1px dotted #0000ff !important;
+
 .emu-hover {
-    outline: 3px inset #ff0000 !important;
+    outline: @hover-outline;
     z-index: 999999 !important;
 }
 
 .emu-selected {
-    outline: 3px inset #0000ff !important;
+    outline: @selected-outline;
     z-index: 999999 !important;
 }
 
 .emu-send {
     position: fixed;
-    background-color: rgba(255, 220, 54, 0.8);;
-    width: 64px;
-    height: 64px;
-    border-radius: 100px;
     right: 20px;
     top: 20px;
-    z-index: 2147483647;
-    cursor: pointer;
+    z-index: @max-zIndex;
     display: none;
-    outline: none !important;
+    background-color: @bg-color;
+    text-align: center;
+    * {
+        background-color: @bg-color;
+    }
     img {
         width: 64px;
         height: 64px;
-        outline: none !important;
+    }
+    .emu-control {
+
+    }
+    &:hover {
+        -webkit-box-shadow: 0 0 5px 1px rgba(255, 238, 156, 0.8);
+        -moz-box-shadow: 0 0 5px 1px rgba(255, 238, 156, 0.8);
+        box-shadow: 0 0 5px 1px rgba(255, 238, 156, 0.8);
     }
 }
 
@@ -38,10 +49,4 @@
     to {
         transform: rotate(360deg);
     }
-}
-
-.emu-send:hover {
-    -webkit-box-shadow: 0 0 5px 1px rgba(255, 238, 156, 0.8);
-    -moz-box-shadow: 0 0 5px 1px rgba(255, 238, 156, 0.8);
-    box-shadow: 0 0 5px 1px rgba(255, 238, 156, 0.8);
 }
