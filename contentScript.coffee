@@ -19,6 +19,7 @@ class Emu
         @cssMarked = {}
         @hasMarked = {}
         @ready = false
+        @isSending = false
 
         $icon = $ '<img/>'
         .attr 'src', chrome.extension.getURL 'icons/paperfly.png'
@@ -36,8 +37,16 @@ class Emu
         .append $control
         .appendTo document.body
 
+        @result = $ '<div/>'
+        .attr 'class', 'emu-result'
+
+    shouldIgnore: (el)->
+        return @sender[0] is el or @sender.has(el).length isnt 0
+
     handleMouseMove: (e)->
-        if @sender.has(e.target).length isnt 0
+        e.stopPropagation()
+        e.preventDefault()
+        if @shouldIgnore(e.target)
             return
         if @$hoverd?[0] isnt e.target
             @$hoverd?.removeClass CLASS_NAME_HOVER
@@ -45,7 +54,9 @@ class Emu
             @$hoverd.addClass CLASS_NAME_HOVER
 
     handleMouseClick: (e)->
-        if @sender.has(e.target).length isnt 0
+        e.stopPropagation()
+        e.preventDefault()
+        if @shouldIgnore(e.target)
             return
 
         @removeSelectedClassname()
@@ -62,6 +73,9 @@ class Emu
         @stopCut() if e.keyCode is 27
 
     handleSendClick: (e)->
+        if @isSending
+            return
+        @isSending = true
         @selected = $(".#{CLASS_NAME_SELECTED}")
         @sender.addClass CLASS_NAME_HAS_SELECTED
         @removeSelectedClassname()
@@ -71,7 +85,7 @@ class Emu
             @mark @selected[0], true
 
             html = @generateHTML()
-            @download (document.title or location.href or 'document') + '.html', html.innerHTML
+            @download (document.title or location.href or 'document'), html.innerHTML
 
             console.log "total:", Date.now() - start + 'ms, length:', html.innerHTML.length
             @stopCut()
@@ -159,19 +173,29 @@ class Emu
     hasSelected: (node)->
         return node.hasSelected
 
+    handleRangeClick: (e)->
+        e.stopPropagation()
+
     startCut: ->
+        @cutting = true
         $(window).on 'mousemove.emu', @handleMouseMove.bind(this)
         $(window).on 'click.emu', @handleMouseClick.bind(this)
         $(window).on 'keydown.emu', @handleKeyDown.bind(this)
         @icon.on 'click.emu', @handleSendClick.bind(this)
         @range.on 'input', @handleRangeChange.bind(this)
+        @range.on 'click.emu', @handleRangeClick.bind(this)
 
     stopCut: ->
+        @cutting = false
         @removeSelectedClassname()
         if @selected
+            @selected.removeClass CLASS_NAME_SELECTED
             @selected[0].isSelected = false
             @mark @selected[0], false
             @selected = null
+
+        @$hoverd and @$hoverd.removeClass CLASS_NAME_HOVER
+
         @sender.hide()
         @cssMarked = {}
         @hasMarked = {}
@@ -179,13 +203,9 @@ class Emu
         $(window).off 'click.emu'
         $(window).off 'keydown.emu'
         @sender.off 'click.emu'
+        @range.off 'click.emu'
 
-    toggle: ->
-        @cutting = not @cutting
-        if @cutting
-            @startCut()
-        else
-            @stopCut()
+    toggle: -> if @cutting then @stopCut() else @startCut()
 
     markMatchedCSS: (el)->
         return unless el.nodeType is Node.ELEMENT_NODE
@@ -267,10 +287,20 @@ class Emu
 
     download: (name, content)->
         chrome.runtime.sendMessage
+            URL: window.location.href
             name: name
             content: content
-        , ->
-            console.log 'done!'
+        , (res)=>
+            @isSending = false
+            if res.code is 0
+                url = "http://emu.sibo.io/page/#{res.payload}"
+                @result.html "Has saved to <a target='_blank' href='#{url}'>#{url}</a>"
+                .appendTo document.body
+                setTimeout =>
+                    @result.fadeOut().remove()
+                , 10 * 1000
+            else
+                alert res.error
 
 emu = new Emu()
 emu.init ->

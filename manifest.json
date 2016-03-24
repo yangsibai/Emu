@@ -1,33 +1,43 @@
 {
-    "name": "Emu",
-    "manifest_version": 2,
-    "version": "0.0.5",
-    "description": "What you select is what you get.",
-    "permissions": [
-        "<all_urls>",
-        "downloads"
-    ],
-    "icons": {
-        "16": "icons/16.png",
-        "24": "icons/24.png",
-        "32": "icons/32.png",
-        "48": "icons/48.png"
-    },
-    "browser_action": {
-        "default_title": "Click and select anything you like",
-        "default_icon": "icons/24.png"
-    },
-    "background": {
-        "scripts": [
-            "index.js"
-        ]
-    },
-    "content_scripts": [{
-        "matches": ["<all_urls>"],
-        "css": ["style.css"],
-        "js": ["lib/jquery-2.0.3.min.js", "contentScript.js"]
-    }],
-    "web_accessible_resources": [
-        "icons/paperfly.png"
+  "name": "Emu",
+  "manifest_version": 2,
+  "version": "0.1.0",
+  "description": "What you select is what you get.",
+  "permissions": [
+    "<all_urls>",
+    "downloads"
+  ],
+  "icons": {
+    "16": "icons/16.png",
+    "24": "icons/24.png",
+    "32": "icons/32.png",
+    "48": "icons/48.png"
+  },
+  "browser_action": {
+    "default_title": "Click and select anything you like",
+    "default_icon": "icons/24.png"
+  },
+  "background": {
+    "scripts": [
+      "lib/ajax.js",
+      "index.js"
     ]
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "css": [
+        "style.css"
+      ],
+      "js": [
+        "lib/jquery-2.0.3.min.js",
+        "contentScript.js"
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    "icons/paperfly.png"
+  ]
 }
